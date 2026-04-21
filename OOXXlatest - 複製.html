@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OOXX 井字遊戲</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #111; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+    h1 { font-size: 36px; font-weight: 500; margin-bottom: 1rem; letter-spacing: 4px; }
+    #status { font-size: 20px; margin-bottom: 1rem; color: #aaa; }
+    .bw-toggle { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; font-size: 14px; color: #aaa; }
+    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 360px; }
+    .cell { aspect-ratio: 1; background: #222; border: 1px solid #444; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 72px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+    .cell:hover { background: #333; }
+    .cell.o { color: #378ADD; }
+    .cell.x { color: #E24B4A; }
+    .cell.o-bw { color: #fff; }
+    .cell.x-bw { color: #fff; }
+    button { margin-top: 1.5rem; padding: 10px 32px; font-size: 16px; background: transparent; color: #fff; border: 1px solid #555; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+    button:hover { background: #333; }
+  </style>
+</head>
+<body>
+  <h1>OOXX</h1>
+  <p id="status">Player O 的回合</p>
+  <div class="bw-toggle">
+    <label for="bwmode">黑白模式</label>
+    <input type="checkbox" id="bwmode" onchange="toggleBW()">
+  </div>
+  <div class="board" id="board"></div>
+  <button onclick="reset()">重新開始</button>
+
+  <script>
+    let board = ["","","","","","","","",""];
+    let current = "O";
+    let running = true;
+    let bw = false;
+
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+    function toggleBW() {
+      bw = document.getElementById("bwmode").checked;
+      renderBoard();
+    }
+
+    function renderBoard() {
+      const b = document.getElementById("board");
+      b.innerHTML = "";
+      board.forEach((v, i) => {
+        const c = document.createElement("div");
+        c.className = "cell" + (v ? " " + (bw ? (v=="O" ? "o-bw" : "x-bw") : v.toLowerCase()) : "");
+        c.textContent = v;
+        c.onclick = () => click(i);
+        b.appendChild(c);
+      });
+    }
+
+    function click(i) {
+      if (!running || board[i]) return;
+      board[i] = current;
+      const w = checkWin();
+      if (w !== null) {
+        renderBoard();
+        if (w === "draw") {
+          document.getElementById("status").textContent = "平手！";
+        } else {
+          document.getElementById("status").textContent = `Player ${current} 獲勝！`;
+        }
+        running = false;
+        return;
+      }
+      current = current === "O" ? "X" : "O";
+      document.getElementById("status").textContent = `Player ${current} 的回合`;
+      renderBoard();
+    }
+
+    function checkWin() {
+      for (const [a, b, c] of wins) {
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) return [a, b, c];
+      }
+      if (board.every(v => v)) return "draw";
+      return null;
+    }
+
+    function reset() {
+      board = ["","","","","","","","",""];
+      current = "O";
+      running = true;
+      document.getElementById("status").textContent = "Player O 的回合";
+      renderBoard();
+    }
+
+    renderBoard();
+  </script>
+</body>
+</html>
